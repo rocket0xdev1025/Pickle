@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jacobian Cat — $Pickle</title>
+  <meta name="description" content="Jacobian Cat ($Pickle). Levent The Quant may have cracked the Jacobian Conjecture. If confirmed, history will remember him—not just the problem." />
+  <link rel="icon" href="logo.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            chalk: {
+              950: '#07140c',
+              900: '#0c1f12',
+              800: '#14301c',
+              700: '#1e4228',
+              600: '#2a5635',
+              dust: '#e8f0d8',
+              line: '#9cb88a',
+            },
+            gold: {
+              300: '#ffe08a',
+              400: '#f5c84a',
+              500: '#e0a820',
+              600: '#c48912',
+            },
+            fur: {
+              400: '#c4a574',
+              500: '#8b6914',
+              700: '#5c4030',
+            }
+          },
+          fontFamily: {
+            display: ['"Bricolage Grotesque"', 'sans-serif'],
+            serif: ['"Instrument Serif"', 'serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          animation: {
+            'float-slow': 'floatSlow 7s ease-in-out infinite',
+            'glow-pulse': 'glowPulse 3.5s ease-in-out infinite',
+            'chalk-drift': 'chalkDrift 18s linear infinite',
+          },
+          keyframes: {
+            floatSlow: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-12px)' },
+            },
+            glowPulse: {
+              '0%, 100%': { opacity: '0.55', filter: 'blur(24px)' },
+              '50%': { opacity: '0.9', filter: 'blur(32px)' },
+            },
+            chalkDrift: {
+              '0%': { backgroundPosition: '0 0' },
+              '100%': { backgroundPosition: '240px 180px' },
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --chalk: #0c1f12;
+      --gold: #f5c84a;
+      --dust: #e8f0d8;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--chalk);
+      color: var(--dust);
+      overflow-x: hidden;
+    }
+
+    .chalkboard {
+      background-color: #0c1f12;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(245, 200, 74, 0.12), transparent 55%),
+        radial-gradient(ellipse 60% 40% at 100% 50%, rgba(156, 184, 138, 0.08), transparent 50%),
+        radial-gradient(ellipse 50% 40% at 0% 80%, rgba(196, 165, 116, 0.1), transparent 45%),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    }
+
+    .equation-wash {
+      background-image: repeating-linear-gradient(
+        -12deg,
+        transparent,
+        transparent 48px,
+        rgba(156, 184, 138, 0.04) 48px,
+        rgba(156, 184, 138, 0.04) 49px
+      );
+      animation: chalkDrift 22s linear infinite;
+    }
+
+    .hero-stage {
+      min-height: 100svh;
+      position: relative;
+      isolation: isolate;
+    }
+
+    .hero-banner {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .hero-banner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 35%;
+    }
+
+    .hero-veil {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background:
+        linear-gradient(180deg, rgba(7, 20, 12, 0.55) 0%, rgba(7, 20, 12, 0.35) 35%, rgba(7, 20, 12, 0.82) 72%, #07140c 100%),
+        linear-gradient(90deg, rgba(7, 20, 12, 0.75) 0%, transparent 45%, rgba(7, 20, 12, 0.45) 100%);
+    }
+
+    .brand-glow {
+      text-shadow: 0 0 40px rgba(245, 200, 74, 0.35), 0 2px 0 rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #ffe08a 0%, #f5c84a 40%, #c48912 100%);
+      color: #0c1f12;
+      box-shadow: 0 0 0 1px rgba(245, 200, 74, 0.4), 0 12px 32px rgba(196, 137, 18, 0.35);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 0 0 1px rgba(245, 200, 74, 0.6), 0 18px 40px rgba(196, 137, 18, 0.45);
+    }
+
+    .btn-ghost {
+      border: 1.5px solid rgba(232, 240, 216, 0.35);
+      background: rgba(12, 31, 18, 0.45);
+      backdrop-filter: blur(8px);
+      transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+    }
+
+    .btn-ghost:hover {
+      transform: translateY(-3px) scale(1.03);
+      border-color: rgba(245, 200, 74, 0.7);
+      background: rgba(12, 31, 18, 0.7);
+    }
+
+    .social-orb {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    }
+
+    .social-orb:hover {
+      transform: translateY(-4px) scale(1.12) rotate(-6deg);
+    }
+
+    .social-orb.x-bg {
+      background: #0a0a0a;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .social-orb.tg-bg {
+      background: #229ED9;
+    }
+
+    .social-orb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Cat emoji pumping on hover */
+    .pump-host {
+      position: relative;
+    }
+
+    .pump-host::after {
+      content: '🐱';
+      position: absolute;
+      left: 50%;
+      top: -0.35rem;
+      font-size: 1.15rem;
+      line-height: 1;
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(-50%, 8px) scale(0.4);
+      transition: none;
+      z-index: 20;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45));
+    }
+
+    .pump-host:hover::after,
+    .pump-host:focus-visible::after {
+      animation: catPump 0.7s cubic-bezier(0.34, 1.45, 0.64, 1) forwards;
+    }
+
+    @keyframes catPump {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, 10px) scale(0.35) rotate(-12deg);
+      }
+      35% {
+        opacity: 1;
+        transform: translate(-50%, -22px) scale(1.35) rotate(8deg);
+      }
+      55% {
+        transform: translate(-50%, -14px) scale(1.05) rotate(-4deg);
+      }
+      75% {
+        transform: translate(-50%, -28px) scale(1.25) rotate(6deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -42px) scale(0.8) rotate(0deg);
+      }
+    }
+
+    .step-num {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 800;
+      font-size: clamp(3rem, 8vw, 5rem);
+      line-height: 0.85;
+      background: linear-gradient(180deg, rgba(245, 200, 74, 0.45), rgba(245, 200, 74, 0.08));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(245, 200, 74, 0.35);
+    }
+
+    .ca-box {
+      border: 1px solid rgba(156, 184, 138, 0.35);
+      background: linear-gradient(135deg, rgba(20, 48, 28, 0.9), rgba(12, 31, 18, 0.95));
+      box-shadow: inset 0 1px 0 rgba(232, 240, 216, 0.06);
+    }
+
+    .copied-flash {
+      animation: copiedFlash 0.9s ease;
+    }
+
+    @keyframes copiedFlash {
+      0%, 100% { box-shadow: inset 0 1px 0 rgba(232, 240, 216, 0.06); }
+      40% { box-shadow: 0 0 0 2px rgba(245, 200, 74, 0.7), 0 0 28px rgba(245, 200, 74, 0.35); }
+    }
+
+    .quote-mark {
+      font-family: "Instrument Serif", serif;
+      font-size: clamp(4rem, 12vw, 7rem);
+      line-height: 0.7;
+      color: rgba(245, 200, 74, 0.25);
+    }
+
+    .chart-frame {
+      border: 1px solid rgba(156, 184, 138, 0.3);
+      background: #0a180f;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    .logo-ring {
+      box-shadow:
+        0 0 0 3px rgba(245, 200, 74, 0.45),
+        0 0 32px rgba(245, 200, 74, 0.35),
+        0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .section-rule {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(156, 184, 138, 0.45), transparent);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pump-host:hover::after,
+      .pump-host:focus-visible::after,
+      .equation-wash,
+      .animate-float-slow,
+      .animate-glow-pulse {
+        animation: none !important;
+      }
+      .pump-host:hover::after {
+        opacity: 1;
+        transform: translate(-50%, -18px) scale(1);
+      }
+    }
+  </style>
+</head>
+<body class="chalkboard font-display antialiased">
+  <!-- Nav -->
+  <header class="fixed top-0 inset-x-0 z-50">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3">
+      <a href="#top" class="pump-host flex items-center gap-2.5 group">
+        <img src="logo.png" alt="Jacobian Cat logo" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover logo-ring transition-transform duration-300 group-hover:rotate-[-8deg] group-hover:scale-110" />
+        <div class="leading-tight">
+          <span class="block text-sm sm:text-base font-extrabold tracking-tight text-chalk-dust">Jacobian Cat</span>
+          <span class="block text-[10px] sm:text-xs font-mono text-gold-400 tracking-widest">$PICKLE</span>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-6 text-sm text-chalk-dust/80">
+        <a href="#story" class="pump-host hover:text-gold-400 transition-colors">Story</a>
+        <a href="#buy" class="pump-host hover:text-gold-400 transition-colors">How to Buy</a>
+        <a href="#chart" class="pump-host hover:text-gold-400 transition-colors">Chart</a>
+      </nav>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <a href="https://t.me/JacobianCat" target="_blank" rel="noopener noreferrer" aria-label="Telegram" class="pump-host social-orb tg-bg">
+          <img src="tg.png" alt="Telegram" />
+        </a>
+        <a href="https://x.com/JacobianCat" target="_blank" rel="noopener noreferrer" aria-label="X / Twitter" class="pump-host social-orb x-bg">
+          <img src="x.png" alt="X" />
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section id="top" class="hero-stage">
+    <div class="hero-banner" aria-hidden="true">
+      <img src="banner.png" alt="" />
+    </div>
+    <div class="hero-veil" aria-hidden="true"></div>
+
+    <div class="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 pt-28 sm:pt-32 pb-16 sm:pb-20 flex flex-col justify-end min-h-[100svh]">
+      <div class="max-w-2xl">
+        <p class="font-mono text-gold-400 text-xs sm:text-sm tracking-[0.25em] uppercase mb-3 sm:mb-4 animate-float-slow" style="animation-duration: 5s;">
+          Solana meme · $Pickle
+        </p>
+        <h1 class="brand-glow text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[0.92] text-chalk-dust">
+          Jacobian Cat
+        </h1>
+        <p class="mt-5 sm:mt-6 max-w-xl text-base sm:text-lg md:text-xl text-chalk-dust/85 font-serif italic leading-relaxed">
+          Levent The Quant may have cracked the Jacobian Conjecture. If confirmed, history will remember him—not just the problem.
+        </p>
+
+        <div class="mt-8 sm:mt-10 flex flex-wrap items-center gap-3 sm:gap-4">
+          <a
+            href="https://swap.pump.fun/?input=So11111111111111111111111111111111111111112&output=TBA"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="pump-host btn-gold inline-flex items-center justify-center px-7 sm:px-9 py-3.5 sm:py-4 rounded-md text-base sm:text-lg font-extrabold tracking-wide"
+          >
+            Buy Now
+          </a>
+          <a
+            href="https://dexscreener.com/solana/TBA"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="pump-host btn-ghost inline-flex items-center justify-center px-7 sm:px-9 py-3.5 sm:py-4 rounded-md text-base sm:text-lg font-bold tracking-wide text-chalk-dust"
+          >
+            Chart
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Narrative -->
+  <section id="story" class="relative equation-wash py-20 sm:py-28">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6">
+      <div class="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-16 items-center">
+        <div>
+          <p class="font-mono text-xs tracking-[0.2em] uppercase text-gold-400 mb-4">The conjecture</p>
+          <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-chalk-dust leading-tight">
+            Proofs on the board.<br />
+            <span class="text-gold-400">A cat in the box.</span>
+          </h2>
+          <div class="mt-8 relative pl-2">
+            <span class="quote-mark absolute -left-1 -top-6 select-none" aria-hidden="true">“</span>
+            <blockquote class="font-serif text-xl sm:text-2xl md:text-3xl italic leading-snug text-chalk-dust/90 pl-6 sm:pl-8">
+              Levent The Quant may have cracked the Jacobian Conjecture. If confirmed, history will remember him—not just the problem.
+            </blockquote>
+          </div>
+          <p class="mt-8 text-chalk-line max-w-lg leading-relaxed">
+            While the chalkboards filled with theorems, one fluffy oracle watched from the shadows.
+            That cat is Jacobian Cat. The ticker is <span class="font-mono text-gold-400">$Pickle</span>.
+            The rest is history—pending peer review on-chain.
+          </p>
+        </div>
+
+        <div class="relative mx-auto w-full max-w-md">
+          <div class="absolute -inset-6 rounded-full bg-gold-400/20 animate-glow-pulse pointer-events-none" aria-hidden="true"></div>
+          <img
+            src="logo.png"
+            alt="Jacobian Cat — the fluffy oracle"
+            class="relative w-full aspect-square object-cover rounded-full logo-ring animate-float-slow"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-rule mx-auto max-w-4xl" aria-hidden="true"></div>
+
+  <!-- CA + CTAs -->
+  <section class="py-16 sm:py-20">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6">
+      <div class="text-center mb-8">
+        <p class="font-mono text-xs tracking-[0.2em] uppercase text-gold-400 mb-2">Contract Address</p>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-chalk-dust">Copy available CA</h2>
+      </div>
+
+      <div id="ca-box" class="ca-box max-w-3xl mx-auto rounded-lg px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+        <code id="ca-address" class="font-mono text-xs sm:text-sm md:text-base text-gold-300 break-all flex-1 text-center sm:text-left select-all">
+          TBA
+        </code>
+        <button
+          type="button"
+          id="copy-ca"
+          class="pump-host btn-gold shrink-0 rounded-md px-5 py-3 text-sm font-extrabold tracking-wide"
+        >
+          Copy CA
+        </button>
+      </div>
+
+      <div class="mt-8 flex flex-wrap justify-center gap-3 sm:gap-4">
+        <a
+          href="https://swap.pump.fun/?input=So11111111111111111111111111111111111111112&output=TBA"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="pump-host btn-gold inline-flex items-center px-8 py-3.5 rounded-md font-extrabold"
+        >
+          Buy Now
+        </a>
+        <a
+          href="https://dexscreener.com/solana/TBA"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="pump-host btn-ghost inline-flex items-center px-8 py-3.5 rounded-md font-bold text-chalk-dust"
+        >
+          Chart
+        </a>
+        <a href="https://t.me/JacobianCat" target="_blank" rel="noopener noreferrer" class="pump-host social-orb tg-bg" aria-label="Telegram">
+          <img src="tg.png" alt="Telegram" />
+        </a>
+        <a href="https://x.com/JacobianCat" target="_blank" rel="noopener noreferrer" class="pump-host social-orb x-bg" aria-label="X">
+          <img src="x.png" alt="X" />
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-rule mx-auto max-w-4xl" aria-hidden="true"></div>
+
+  <!-- How to Buy -->
+  <section id="buy" class="py-20 sm:py-28 equation-wash">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6">
+      <div class="text-center max-w-2xl mx-auto mb-14 sm:mb-16">
+        <p class="font-mono text-xs tracking-[0.2em] uppercase text-gold-400 mb-3">Solana · 4 steps</p>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-chalk-dust">
+          How to Buy <span class="text-gold-400">$Pickle</span>
+        </h2>
+        <p class="mt-4 text-chalk-line font-serif italic text-lg">
+          No PhD required. Just a wallet and a little courage.
+        </p>
+      </div>
+
+      <ol class="grid sm:grid-cols-2 gap-x-10 gap-y-12 lg:gap-y-16">
+        <li class="pump-host group">
+          <span class="step-num" aria-hidden="true">01</span>
+          <h3 class="mt-2 text-xl sm:text-2xl font-extrabold text-chalk-dust group-hover:text-gold-400 transition-colors">
+            Get a Solana wallet
+          </h3>
+          <p class="mt-3 text-chalk-line leading-relaxed">
+            Install Phantom, Solflare, or Backpack. Create a wallet and keep your seed phrase offline—like chalk locked in a vault.
+          </p>
+        </li>
+        <li class="pump-host group">
+          <span class="step-num" aria-hidden="true">02</span>
+          <h3 class="mt-2 text-xl sm:text-2xl font-extrabold text-chalk-dust group-hover:text-gold-400 transition-colors">
+            Fund with SOL
+          </h3>
+          <p class="mt-3 text-chalk-line leading-relaxed">
+            Buy SOL on an exchange, then send it to your wallet address. You’ll need SOL for the swap and network fees.
+          </p>
+        </li>
+        <li class="pump-host group">
+          <span class="step-num" aria-hidden="true">03</span>
+          <h3 class="mt-2 text-xl sm:text-2xl font-extrabold text-chalk-dust group-hover:text-gold-400 transition-colors">
+            Open the swap
+          </h3>
+          <p class="mt-3 text-chalk-line leading-relaxed">
+            Hit <a href="https://swap.pump.fun/?input=So11111111111111111111111111111111111111112&output=TBA" target="_blank" rel="noopener noreferrer" class="text-gold-400 underline underline-offset-4 hover:text-gold-300">Buy Now</a>
+            to open Pump.fun with SOL → $Pickle preselected. Connect your wallet.
+          </p>
+        </li>
+        <li class="pump-host group">
+          <span class="step-num" aria-hidden="true">04</span>
+          <h3 class="mt-2 text-xl sm:text-2xl font-extrabold text-chalk-dust group-hover:text-gold-400 transition-colors">
+            Swap &amp; hold the cat
+          </h3>
+          <p class="mt-3 text-chalk-line leading-relaxed">
+            Confirm the swap, then verify the chart on Dexscreener. You’re now part of the conjecture—welcome to Jacobian Cat.
+          </p>
+        </li>
+      </ol>
+
+      <div class="mt-14 text-center">
+        <a
+          href="https://swap.pump.fun/?input=So11111111111111111111111111111111111111112&output=TBA"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="pump-host btn-gold inline-flex items-center px-10 py-4 rounded-md text-lg font-extrabold"
+        >
+          Buy $Pickle Now
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-rule mx-auto max-w-4xl" aria-hidden="true"></div>
+
+  <!-- Chart embed -->
+  <section id="chart" class="py-20 sm:py-28">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6">
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+        <div>
+          <p class="font-mono text-xs tracking-[0.2em] uppercase text-gold-400 mb-2">Live market</p>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-chalk-dust">Dexscreener Chart</h2>
+        </div>
+        <a
+          href="https://dexscreener.com/solana/TBA"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="pump-host btn-ghost inline-flex items-center self-start sm:self-auto px-6 py-3 rounded-md text-sm font-bold text-chalk-dust"
+        >
+          Open full chart →
+        </a>
+      </div>
+
+      <div class="chart-frame rounded-lg aspect-[16/11] sm:aspect-[16/9] w-full">
+        <iframe
+          title="Dexscreener chart for $Pickle"
+          src="https://dexscreener.com/solana/TBA?embed=1&loadChartSettings=0&trades=0&tabs=0&info=0&chartLeftToolbar=0&chartTheme=dark&theme=dark&chartStyle=0&chartType=usd&interval=15"
+          class="w-full h-full border-0"
+          loading="lazy"
+          allow="clipboard-write"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-chalk-line/20 py-10 sm:py-12">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+      <a href="#top" class="pump-host flex items-center gap-3">
+        <img src="logo.png" alt="" class="w-11 h-11 rounded-full object-cover logo-ring" />
+        <div>
+          <p class="font-extrabold text-chalk-dust">Jacobian Cat</p>
+          <p class="font-mono text-xs text-gold-400">$Pickle · Solana</p>
+        </div>
+      </a>
+
+      <p class="font-serif italic text-sm text-chalk-line text-center max-w-sm">
+        History remembers the cat. The chalkboard was never empty.
+      </p>
+
+      <div class="flex items-center gap-3">
+        <a href="https://t.me/JacobianCat" target="_blank" rel="noopener noreferrer" class="pump-host social-orb tg-bg" aria-label="Telegram">
+          <img src="tg.png" alt="Telegram" />
+        </a>
+        <a href="https://x.com/JacobianCat" target="_blank" rel="noopener noreferrer" class="pump-host social-orb x-bg" aria-label="X">
+          <img src="x.png" alt="X" />
+        </a>
+      </div>
+    </div>
+    <p class="mt-8 text-center font-mono text-[10px] sm:text-xs text-chalk-line/60 tracking-wide">
+      $Pickle is a meme token. Not financial advice. DYOR.
+    </p>
+  </footer>
+
+  <script>
+    (function () {
+      var ca = 'TBA';
+      var btn = document.getElementById('copy-ca');
+      var box = document.getElementById('ca-box');
+      var label = btn ? btn.textContent : 'Copy CA';
+
+      function flashCopied() {
+        if (!btn || !box) return;
+        btn.textContent = 'Copied!';
+        box.classList.add('copied-flash');
+        setTimeout(function () {
+          btn.textContent = label;
+          box.classList.remove('copied-flash');
+        }, 1400);
+      }
+
+      if (btn) {
+        btn.addEventListener('click', function () {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(ca).then(flashCopied).catch(fallbackCopy);
+          } else {
+            fallbackCopy();
+          }
+        });
+      }
+
+      function fallbackCopy() {
+        var ta = document.createElement('textarea');
+        ta.value = ca;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'absolute';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          flashCopied();
+        } catch (e) { /* ignore */ }
+        document.body.removeChild(ta);
+      }
+    })();
+  </script>
+</body>
+</html>
